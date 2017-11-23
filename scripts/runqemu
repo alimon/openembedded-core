@@ -1196,8 +1196,10 @@ class BaseConfig(object):
         logger.info('Running %s\n' % cmd)
         process = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
         if process.wait():
-            logger.error("Failed to run qemu: %s", process.stderr.read().decode())
-
+            stderr = process.stderr.read().decode()
+            logger.error("Failed to run qemu: %s", stderr)
+            if "KVM: Cannot allocate memory" in stderr:
+                logger.error(open("/proc/pagetypeinfo").read())
     def cleanup(self):
         if self.cleantap:
             cmd = 'sudo %s %s %s' % (self.qemuifdown, self.tap, self.bindir_native)
